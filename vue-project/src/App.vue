@@ -4,22 +4,22 @@ import { ref, reactive, onBeforeMount, onMounted } from 'vue';
 const list = reactive({
   tasks: [
     {
-      id: 1,
+      id: "e0303f61ef3f9",
       name: "Testing",
       status: "done"
     },
     {
-      id: 2,
+      id: "d80c1ffbe9a2f",
       name: "item 2",
       status: "ongoing"
     },
     {
-      id: 3,
+      id: "af966bae04967",
       name: "item 3",
       status: "ongoing"
     },
     {
-      id: 4,
+      id: "47ae9eeece4c4",
       name: "item 4",
       status: "ongoing"
     },
@@ -57,57 +57,71 @@ const deleteTask = (item, index) => {
       ongoingTask.splice(index, 1);
     } else if (item.status === 'done') {
       doneTask.splice(index, 1);
-
     }
   }
+
+const addTask = () => {
+  const task = {
+    id: Math.random().toString(16).slice(2),
+    name: 'asd',
+    status: 'ongoing'
+  }
+
+  ongoingTask.push(task);
+}
 
 </script>
 
 <template>
-  <v-container>
-    <v-row>
-      <v-col>
+  <v-container max-width="100%">
+    <v-row justify="center">
+      <v-col cols="8">
         <h1 class="text-h3 text-center">My ToDo List</h1>
       </v-col>
     </v-row>
-    <v-row >
-      <v-col cols="9" align="end">
-        <v-btn prepend-icon="$mdiPlus" variant="outlined" class="mx-auto">
+    <v-row justify="center">
+      <v-col align="end" class="" cols="8">
+        <v-btn prepend-icon="$mdiPlus" variant="outlined" class="mx-auto" @click="addTask">
           Add Task
         </v-btn>
       </v-col>
     </v-row>
-    <v-row>
-      <v-card class="mx-auto mt-16" width="1000" :color="ongoingColor">
-        <v-card-title class="py-0 pt-3">
-          <p>Ongoing</p>
-        </v-card-title>
-        <v-card-item class="pt-3 pb-6">
-          <v-list :bg-color="ongoingColor" class="border-t-lg">
-            <v-list-item v-for="(item, index) in ongoingTask" :key="item.id" :value="item.id" class="border-b-md"
-              @click="updateTask(item, index)">
-              <div class="d-flex justify-space-between">
-                <p v-if="item.status === 'ongoing'">{{ item.name }}</p>
-                <v-btn variant="tonal" icon="$mdiClose" @click="deleteTask(item, index)">
-                </v-btn>
-              </div>
-            </v-list-item>
-          </v-list>
-        </v-card-item>
-      </v-card>
-      <v-card class="mx-auto mt-16" width="1000" :color="doneColor">
-        <v-card-title class="" py-0 pt-3>
-          <p>Done</p>
-        </v-card-title>
-        <v-card-item class="pt-3 pb-6">
-          <v-list :bg-color="doneColor" class="border-t-lg">
-            <v-list-item v-for="(item, index) in doneTask" :key="item.id" :value="item.id" class="border-b-md"
-              @click="updateTask(item, index)">
-              <p>{{ item.name }}</p>
-            </v-list-item>
-          </v-list>
-        </v-card-item>
-      </v-card>
+    <v-row justify="center">
+      <v-col cols="8">
+        <v-card class="mx-auto mt-8" :color="ongoingColor">
+          <v-card-title class="py-0 pt-3">
+            <p>Ongoing</p>
+          </v-card-title>
+          <v-card-item class="pt-3 pb-6">
+            <v-list :bg-color="ongoingColor" class="border-t-lg">
+              <v-list-item v-for="(item, index) in ongoingTask" :key="item.id" :value="item.id" class="border-b-md"
+                @click="updateTask(item, index)">
+                <div class="d-flex justify-space-between align-center">
+                  <p>{{ item.name }}</p>
+                  <v-btn variant="tonal" icon="$mdiClose" @click="deleteTask(item, index)">
+                  </v-btn>
+                </div>
+              </v-list-item>
+            </v-list>
+          </v-card-item>
+        </v-card>
+        <v-card class="mx-auto mt-8" :color="doneColor">
+          <v-card-title class="" py-0 pt-3>
+            <p>Done</p>
+          </v-card-title>
+          <v-card-item class="pt-3 pb-6">
+            <v-list :bg-color="doneColor" class="border-t-lg">
+              <v-list-item v-for="(item, index) in doneTask" :key="item.id" :value="item.id" class="border-b-md"
+                @click="updateTask(item, index)">
+                <div class="d-flex justify-space-between align-center">
+                  <p>{{ item.name }}</p>
+                  <v-btn variant="tonal" icon="$mdiClose" @click="deleteTask(item, index)"></v-btn>
+                </div>
+              </v-list-item>
+            </v-list>
+          </v-card-item>
+        </v-card>
+      </v-col>
     </v-row>
   </v-container>
 </template>
