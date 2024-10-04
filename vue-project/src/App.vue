@@ -1,6 +1,8 @@
 <script setup>
-import { ref, reactive, onBeforeUnmount, onMounted } from 'vue';
+import { ref, reactive } from 'vue';
 import tasks from '@/tasks.json'
+import AddTaskDialog from '@/components/AddTaskDialog.vue'
+import TaskCategoryCard from './components/TaskCategoryCard.vue';
 
 const list = reactive(tasks);
 
@@ -10,10 +12,6 @@ const doneColor = ref("green-darken-2");
 const ongoingTask = reactive([]);
 const doneTask = reactive([]);
 
-let taskTitle = ref("");
-const formValid = ref(false);
-const isDialogShown = ref(false);
-
 list.tasks.forEach((task) => {
   if (task.status === 'ongoing') {
     ongoingTask.push(task);
@@ -22,7 +20,7 @@ list.tasks.forEach((task) => {
   }
 })
 
-const updateTask = (item, index) => {
+const markTask = (item, index) => {
   if (item.status === 'ongoing') {
     item.status = 'done';
     const task = ongoingTask.splice(index, 1);
@@ -34,6 +32,14 @@ const updateTask = (item, index) => {
   }
 }
 
+const updateTask = (formValid, item, taskTitle) => {
+  if (item.status === 'ongoing') {
+    item.name = taskTitle;
+  } else if (item.status === 'done') {
+    item.name = taskTitle;
+  }
+}
+
 const deleteTask = (item, index) => {
   if (item.status === 'ongoing') {
     ongoingTask.splice(index, 1);
@@ -42,40 +48,18 @@ const deleteTask = (item, index) => {
   }
 }
 
-const addTask = () => {
-  if (formValid.value) {
+const addTask = (formValid, taskTitle) => {
+  if (formValid) {
 
     const task = {
       id: Math.random().toString(16).slice(2),
-      name: taskTitle.value,
+      name: taskTitle,
       status: 'ongoing'
     }
 
     ongoingTask.push(task);
-
-    isDialogShown.value = false;
-    taskTitle.value = "";
   }
 }
-
-const rules = {
-  taskRules: [
-    (value) => {
-      if (value) return true;
-
-      return "Task can't be empty";
-    },
-    (value) => {
-      if (value.length < 20) return true;
-
-      return "Task Name can't be more than 20 characters"
-    }
-  ]
-}
-
-onBeforeUnmount(() => {
-  alert('here');
-});
 
 </script>
 
@@ -88,76 +72,18 @@ onBeforeUnmount(() => {
     </v-row>
     <v-row justify="center">
       <v-col align="end" class="" cols="8">
-        <v-dialog persistent width="50%" v-model="isDialogShown">
-          <template v-slot:activator="{ props: activatorDialog }">
-            <v-btn v-bind="activatorDialog" prepend-icon="$mdiPlus" variant="outlined" class="mx-auto">
-              Add Task
-            </v-btn>
-          </template>
-          <template v-slot:default="{ isActive }">
-            <v-card>
-              <v-card-item>
-                <v-card-title>
-                  Add New Task
-                </v-card-title>
-              </v-card-item>
-              <v-card-text>
-                <v-container max-width="100%">
-                  <v-row>
-                    <v-col>
-                      <v-form validate-on="input lazy" @submit.prevent="addTask();" v-model="formValid">
-                        <v-text-field clearable placeholder="Type Task" type="text" v-model="taskTitle"
-                          :rules="rules.taskRules">
-
-                        </v-text-field>
-                        <v-btn type="submit">
-                          Add
-                        </v-btn>
-                      </v-form>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </v-card-text>
-            </v-card>
-          </template>
-        </v-dialog>
+        <v-btn prepend-icon="$mdiPlus" variant="outlined" class="mx-auto">
+          Add Task
+          <AddTaskDialog @add-task="addTask" />
+        </v-btn>
       </v-col>
     </v-row>
     <v-row justify="center">
       <v-col cols="8">
-        <v-card class="mx-auto mt-8" :color="ongoingColor">
-          <v-card-item class="pt-3 pb-6">
-            <v-card-title class="py-0 pt-3">
-              <p>Ongoing</p>
-            </v-card-title>
-            <v-list :bg-color="ongoingColor" class="border-t-lg">
-              <v-list-item v-for="( item, index ) in  ongoingTask " :key="item.id" :value="item.id" class="border-b-md"
-                @click="updateTask(item, index)">
-                <div class="d-flex justify-space-between align-center">
-                  <p>{{ item.name }}</p>
-                  <v-btn variant="tonal" icon="$mdiClose" @click="deleteTask(item, index)">
-                  </v-btn>
-                </div>
-              </v-list-item>
-            </v-list>
-          </v-card-item>
-        </v-card>
-        <v-card class="mx-auto mt-8" :color="doneColor">
-          <v-card-item class="pt-3 pb-6">
-            <v-card-title class="" py-0 pt-3>
-              <p>Done</p>
-            </v-card-title>
-            <v-list :bg-color="doneColor" class="border-t-lg">
-              <v-list-item v-for="( item, index ) in  doneTask " :key="item.id" :value="item.id" class="border-b-md"
-                @click="updateTask(item, index)">
-                <div class="d-flex justify-space-between align-center">
-                  <p>{{ item.name }}</p>
-                  <v-btn variant="tonal" icon="$mdiClose" @click="deleteTask(item, index)"></v-btn>
-                </div>
-              </v-list-item>
-            </v-list>
-          </v-card-item>
-        </v-card>
+        <TaskCategoryCard :card-color="ongoingColor" :ongoing-task="ongoingTask" @mark-task="markTask"
+          @delete-task="deleteTask" />
+        <TaskCategoryCard :card-color="doneColor" :ongoing-task="doneTask" @mark-task="markTask"
+          :delete-task="deleteTask" />
       </v-col>
     </v-row>
   </v-container>
