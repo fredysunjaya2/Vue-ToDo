@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, inject } from 'vue';
 
 let formValid = false;
 const isDialogShown = ref(false);
@@ -47,15 +47,34 @@ const addTaskRequest = () => {
     }
 }
 
+/**
+ * dengan cara emit tetapi dalam complex nested component akan sulit karena emit hanya naik 1 step ke parentnya sehingga 
+ * akan terlalu banyak passing estafet dari deep child ke rootnya
+ */
+
+// const updateTaskRequest = () => {
+//     if (formValid) {
+//         emit('emitToParentUpdateTask', props.taskItem, taskNewTitle.value);
+
+//         isDialogShown.value = false;
+//         taskTitle.value = "";
+//     }
+// }
+
+
+/**
+ * dengan cara provide dan inject sehingga mencegah passing estafet
+ */
+const { updateTask } = inject('task')
+
 const updateTaskRequest = () => {
     if (formValid) {
-        emit('emitToParentUpdateTask', props.taskItem, taskNewTitle.value);
+        updateTask(props.taskItem, taskNewTitle.value)
 
         isDialogShown.value = false;
         taskTitle.value = "";
     }
 }
-
 
 </script>
 

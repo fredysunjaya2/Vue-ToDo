@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, provide } from 'vue';
 import tasks from '@/tasks.json'
 import AddTaskDialog from '@/components/AddTaskDialog.vue'
 import TaskCategoryCard from './components/TaskCategoryCard.vue';
@@ -9,6 +9,9 @@ const list = reactive(tasks);
 const ongoingColor = ref("red-lighten-4");
 const doneColor = ref("green-darken-2");
 
+/**
+ * Object pada JS pass by reference
+ */
 const ongoingTask = reactive([]);
 const doneTask = reactive([]);
 
@@ -58,6 +61,8 @@ const addTask = (taskTitle) => {
   ongoingTask.push(task);
 
 }
+
+provide('task', { updateTask });
 
 </script>
 

@@ -2,6 +2,10 @@
 import { ref, reactive } from 'vue';
 import AddTaskDialog from '@/components/AddTaskDialog.vue';
 
+
+/**
+ * Penggunaan Props
+ */
 const props = defineProps({
     cardColor: {
         type: String,
@@ -11,6 +15,9 @@ const props = defineProps({
     }
 });
 
+/**
+ * Penggunaan declaration emits
+ */
 const emit = defineEmits([
     'markTask',
     'deleteTask',
