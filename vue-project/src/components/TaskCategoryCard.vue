@@ -34,7 +34,7 @@ const emit = defineEmits({
                         <div>
                             <v-btn variant="tonal" icon="$mdiPencil">
                                 <v-icon icon="$mdiPencil"></v-icon>
-                                <AddTaskDialog :task-old-title="item.name" />
+                                <AddTaskDialog :task-old-title="item.name" :task-item="item" />
                             </v-btn>
                             <v-btn variant="tonal" icon="$mdiClose" @click="$emit('deleteTask', item)"></v-btn>
                         </div>

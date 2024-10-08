@@ -34,6 +34,7 @@ const markTask = (item, index) => {
 
 const updateTask = (formValid, item, taskTitle) => {
   if (item.status === 'ongoing') {
+    console.log('here');
     item.name = taskTitle;
   } else if (item.status === 'done') {
     item.name = taskTitle;

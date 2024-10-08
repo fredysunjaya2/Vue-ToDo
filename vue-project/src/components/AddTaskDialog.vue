@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, updated } from 'vue';
 
 const taskTitle = ref("");
 let formValid = false;
@@ -24,6 +24,9 @@ const props = defineProps({
     taskOldTitle: {
         type: String,
         default: "",
+    },
+    taskItem: {
+        type: Object,
     }
 });
 
@@ -40,20 +43,20 @@ const addTaskRequest = () => {
     }
 }
 
-if (props.taskOldTitle != "") {
-    taskTitle.value = props.taskOldTitle;
-}
-
 const updateTaskRequest = () => {
     if (formValid) {
-        emit('updateTask', formValid, item, taskTitle.value);
+        emit('updateTask', formValid, taskItem, taskTitle.value);
 
         isDialogShown.value = false;
         taskTitle.value = "";
     }
 }
 
-console.log(taskTitle.value)
+updated() {
+    this.renderCount++;
+    console.log('Updated ' + this.renderCount + ' times.')
+  }
+
 </script>
 
 <template>
@@ -70,7 +73,7 @@ console.log(taskTitle.value)
                         <v-row>
                             <v-col>
                                 <v-form validate-on="input lazy"
-                                    @submit.prevent="taskTitle.value === '' ? addTaskRequest : updateTaskRequest"
+                                    @submit.prevent="taskOldTitle !== '' ? addTaskRequest() : updateTaskRequest()"
                                     v-model="formValid">
                                     <v-text-field clearable placeholder="Type Task" type="text" v-model="taskTitle"
                                         :rules="rules.taskRules">
