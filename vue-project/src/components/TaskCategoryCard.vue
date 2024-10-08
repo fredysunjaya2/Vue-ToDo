@@ -11,12 +11,15 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits({
-    markTask: 'markTask',
-    deleteTask: 'deleteTask',
-    updateTask: 'updateTask',
-})
+const emit = defineEmits([
+    'markTask',
+    'deleteTask',
+    'updateTask',
+])
 
+const emitToParentUpdateTask = (item, taskTitle) => {
+    emit('updateTask', item, taskTitle);
+}
 
 </script>
 
@@ -34,7 +37,8 @@ const emit = defineEmits({
                         <div>
                             <v-btn variant="tonal" icon="$mdiPencil">
                                 <v-icon icon="$mdiPencil"></v-icon>
-                                <AddTaskDialog :task-old-title="item.name" :task-item="item" />
+                                <AddTaskDialog :task-old-title="item.name" :task-item="item"
+                                    @emit-to-parent-update-task="emitToParentUpdateTask" />
                             </v-btn>
                             <v-btn variant="tonal" icon="$mdiClose" @click="$emit('deleteTask', item)"></v-btn>
                         </div>

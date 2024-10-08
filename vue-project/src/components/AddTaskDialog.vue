@@ -1,7 +1,6 @@
 <script setup>
-import { ref, reactive, updated } from 'vue';
+import { ref, reactive, computed } from 'vue';
 
-const taskTitle = ref("");
 let formValid = false;
 const isDialogShown = ref(false);
 
@@ -30,13 +29,18 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits({
-    addTask: 'addTask',
-});
+const taskTitle = ref("");
+
+const taskNewTitle = ref(props.taskOldTitle);
+
+const emit = defineEmits([
+    'addTask',
+    'emitToParentUpdateTask',
+]);
 
 const addTaskRequest = () => {
     if (formValid) {
-        emit('addTask', formValid, taskTitle.value);
+        emit('addTask', taskTitle.value);
 
         isDialogShown.value = false;
         taskTitle.value = "";
@@ -45,17 +49,13 @@ const addTaskRequest = () => {
 
 const updateTaskRequest = () => {
     if (formValid) {
-        emit('updateTask', formValid, taskItem, taskTitle.value);
+        emit('emitToParentUpdateTask', props.taskItem, taskNewTitle.value);
 
         isDialogShown.value = false;
         taskTitle.value = "";
     }
 }
 
-updated() {
-    this.renderCount++;
-    console.log('Updated ' + this.renderCount + ' times.')
-  }
 
 </script>
 
@@ -73,10 +73,13 @@ updated() {
                         <v-row>
                             <v-col>
                                 <v-form validate-on="input lazy"
-                                    @submit.prevent="taskOldTitle !== '' ? addTaskRequest() : updateTaskRequest()"
+                                    @submit.prevent="taskOldTitle === '' ? addTaskRequest() : updateTaskRequest()"
                                     v-model="formValid">
-                                    <v-text-field clearable placeholder="Type Task" type="text" v-model="taskTitle"
-                                        :rules="rules.taskRules">
+                                    <v-text-field v-if="taskOldTitle === ''" clearable placeholder="Type Task" type="text"
+                                        v-model="taskTitle" :rules="rules.taskRules">
+                                    </v-text-field>
+                                    <v-text-field v-else clearable placeholder="Type Task" type="text"
+                                        v-model="taskNewTitle" :rules="rules.taskRules">
                                     </v-text-field>
                                     <v-btn v-if="taskOldTitle === ''" type="submit">
                                         Add

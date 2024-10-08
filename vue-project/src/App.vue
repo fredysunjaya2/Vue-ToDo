@@ -32,9 +32,8 @@ const markTask = (item, index) => {
   }
 }
 
-const updateTask = (formValid, item, taskTitle) => {
+const updateTask = (item, taskTitle) => {
   if (item.status === 'ongoing') {
-    console.log('here');
     item.name = taskTitle;
   } else if (item.status === 'done') {
     item.name = taskTitle;
@@ -49,17 +48,15 @@ const deleteTask = (item, index) => {
   }
 }
 
-const addTask = (formValid, taskTitle) => {
-  if (formValid) {
-
-    const task = {
-      id: Math.random().toString(16).slice(2),
-      name: taskTitle,
-      status: 'ongoing'
-    }
-
-    ongoingTask.push(task);
+const addTask = (taskTitle) => {
+  const task = {
+    id: Math.random().toString(16).slice(2),
+    name: taskTitle,
+    status: 'ongoing'
   }
+
+  ongoingTask.push(task);
+
 }
 
 </script>
@@ -82,9 +79,9 @@ const addTask = (formValid, taskTitle) => {
     <v-row justify="center">
       <v-col cols="8">
         <TaskCategoryCard :card-color="ongoingColor" :ongoing-task="ongoingTask" @mark-task="markTask"
-          @delete-task="deleteTask" />
-        <TaskCategoryCard :card-color="doneColor" :ongoing-task="doneTask" @mark-task="markTask"
-          :delete-task="deleteTask" />
+          @delete-task="deleteTask" @update-task="updateTask" />
+        <TaskCategoryCard :card-color="doneColor" :ongoing-task="doneTask" @mark-task="markTask" :delete-task="deleteTask"
+          @update-task="updateTask" />
       </v-col>
     </v-row>
   </v-container>
