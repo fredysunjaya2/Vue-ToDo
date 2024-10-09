@@ -4,7 +4,8 @@ import { ref, reactive, provide, onMounted, computed } from 'vue';
 import AddTaskDialog from '@/components/AddTaskDialog.vue'
 import TaskCategoryCard from './components/TaskCategoryCard.vue';
 import axios from 'axios';
-
+import Swal from 'sweetalert2';
+import moment from 'moment';
 
 const list = reactive({
   tasks: [],
@@ -12,6 +13,7 @@ const list = reactive({
 
 const ongoingColor = ref("red-lighten-4");
 const doneColor = ref("green-darken-2");
+const sortBySelectValue = ref("");
 
 /**
  * Object pada JS pass by reference
@@ -32,7 +34,7 @@ const doneTask = computed(() => {
   return list.tasks.filter((task) => task.status === 'done')
 });
 
-const markTask = async (item, index) => {
+const markTask = async (item) => {
   try {
     let newStatus = "";
     if (item.status === 'ongoing') {
@@ -60,27 +62,50 @@ const updateTask = async (item, taskTitle) => {
 
     const responseTemp = await axios.get('/api/tasks');
     list.tasks = responseTemp.data;
+
+    taskToast.fire({
+      titleText: 'Task Updated Successfully!!!',
+    });
   } catch (error) {
     console.log(error);
   }
 }
 
-const deleteTask = async (item, index) => {
-  try {
-    const result = await axios.delete(`/api/tasks/${item.id}`)
+const deleteTask = async (event, item) => {
+  event.stopPropagation();
 
-    const responseTemp = await axios.get('/api/tasks');
-    list.tasks = responseTemp.data;
-  } catch (error) {
-    console.log(error)
-  }
+  taskConfirmation.fire({
+    titleText: "Are you sure to delete this task?",
+  }).then(async (result) => {
+    try {
+      if (result.isConfirmed) {
+        const result = await axios.delete(`/api/tasks/${item.id}`)
+
+        const responseTemp = await axios.get('/api/tasks');
+        list.tasks = responseTemp.data;
+
+        taskToast.fire({
+          titleText: 'Task Deleted Successfully!!!',
+        });
+      } else if (result.isDenied) {
+        taskToast.fire({
+          titleText: 'Task Deletion is Cancelled',
+          icon: 'error',
+          background: '#D50000',
+        })
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  });
 }
 
 const addTask = async (taskTitle) => {
   const task = {
     id: Math.random().toString(16).slice(2),
     name: taskTitle,
-    status: 'ongoing'
+    status: 'ongoing',
+    createdAt: moment().toISOString
   }
 
   try {
@@ -89,6 +114,9 @@ const addTask = async (taskTitle) => {
     const responseTemp = await axios.get('/api/tasks');
     list.tasks = responseTemp.data;
 
+    taskToast.fire({
+      titleText: 'Task added successfully!!!',
+    });
   } catch (error) {
     console.log(error);
   }
@@ -97,6 +125,80 @@ const addTask = async (taskTitle) => {
 
 provide('task', { updateTask });
 
+const sortBy = async () => {
+  try {
+    if (sortBySelectValue.value === 'Date') {
+      list.tasks.sort((a, b) => {
+        if (moment(a.createdAt).isBefore(moment(b.createdAt))) {
+          return -1;
+        } else if (moment(a.createdAt).isAfter(moment(b.createdAt))) {
+          return 1;
+        } else {
+          return 0;
+        }
+      })
+    } else if (sortBySelectValue.value === 'A-Z') {
+      list.tasks.sort((a, b) => {
+        if (a.name.localeCompare(b.name, { sensitivity: 'accent' }) < 0) {
+          return -1;
+        } else if (a.name.localeCompare(b.name, { sensitivity: 'accent' }) > 0) {
+          return 1;
+        } else {
+          return 0;
+        }
+      })
+
+      // const responseTemp = await axios.get('/api/tasks?_sort=name')
+      // list.tasks = responseTemp.data
+
+    } else if (sortBySelectValue.value === 'Z-A') {
+      list.tasks.sort((a, b) => {
+        if (a.name.localeCompare(b.name, { sensitivity: 'accent' }) < 0) {
+          return 1;
+        } else if (a.name.localeCompare(b.name, { sensitivity: 'accent' }) > 0) {
+          return -1;
+        } else {
+          return 0;
+        }
+      })
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+const taskToast = Swal.mixin({
+  icon: 'success',
+  iconColor: '#FFFFFF',
+  showConfirmButton: false,
+  toast: true,
+  timerProgressBar: true,
+  timer: 3000,
+  position: 'top-right',
+  background: '#00C853',
+  customClass: {
+    title: 'text-white',
+  },
+})
+
+const taskConfirmation = Swal.mixin({
+  icon: 'warning',
+  backdrop: true,
+  allowOutsideClick: false,
+  allowEscapeKey: false,
+  showConfirmButton: true,
+  confirmButtonText: "Confirm",
+  confirmButtonColor: "#00C853",
+  showDenyButton: true,
+  denyButtonText: "Cancel",
+  denyButtonColor: "#D50000",
+  background: '#FFFFFF',
+  customClass: {
+    confirmButton: "text-white",
+    denyButton: "text-white",
+    title: "text-black text-h5 font-weight-bold"
+  }
+})
 
 </script>
 
@@ -108,11 +210,16 @@ provide('task', { updateTask });
       </v-col>
     </v-row>
     <v-row justify="center">
-      <v-col align="end" class="" cols="8">
-        <v-btn prepend-icon="$mdiPlus" variant="outlined" class="mx-auto">
-          Add Task
-          <AddTaskDialog @add-task="addTask" />
-        </v-btn>
+      <v-col class="" cols="8">
+        <v-row align="center" justify="space-between">
+          <v-select clearable label="Sort By:" variant="outlined" :items="['Date', 'A-Z', 'Z-A']" max-width="15%"
+            v-model="sortBySelectValue" @update:model-value="sortBy">
+          </v-select>
+          <v-btn prepend-icon="$mdiPlus" variant="outlined">
+            Add Task
+            <AddTaskDialog @add-task="addTask" />
+          </v-btn>
+        </v-row>
       </v-col>
     </v-row>
     <v-row justify="center">
@@ -120,7 +227,7 @@ provide('task', { updateTask });
         <TaskCategoryCard :card-color="ongoingColor" :ongoing-task="ongoingTask" category="Ongoing" @mark-task="markTask"
           @delete-task="deleteTask" @update-task="updateTask" />
         <TaskCategoryCard :card-color="doneColor" :ongoing-task="doneTask" category="Done" @mark-task="markTask"
-          :delete-task="deleteTask" @update-task="updateTask" />
+          @delete-task="deleteTask" @update-task="updateTask" />
       </v-col>
     </v-row>
   </v-container>

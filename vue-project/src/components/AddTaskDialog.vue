@@ -95,10 +95,10 @@ const updateTaskRequest = () => {
                                     @submit.prevent="taskOldTitle === '' ? addTaskRequest() : updateTaskRequest()"
                                     v-model="formValid">
                                     <v-text-field v-if="taskOldTitle === ''" clearable placeholder="Type Task" type="text"
-                                        v-model="taskTitle" :rules="rules.taskRules">
+                                        v-model="taskTitle" :rules="rules.taskRules" autofocus>
                                     </v-text-field>
                                     <v-text-field v-else clearable placeholder="Type Task" type="text"
-                                        v-model="taskNewTitle" :rules="rules.taskRules">
+                                        v-model="taskNewTitle" :rules="rules.taskRules" autofocus>
                                     </v-text-field>
                                     <v-btn v-if="taskOldTitle === ''" type="submit">
                                         Add

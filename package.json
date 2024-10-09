@@ -2,5 +2,9 @@
   "devDependencies": {
     "@mdi/font": "^7.4.47",
     "@mdi/js": "^7.4.47"
+  },
+  "dependencies": {
+    "moment": "^2.30.1",
+    "sweetalert2": "^11.14.2"
   }
 }
