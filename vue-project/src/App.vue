@@ -1,10 +1,14 @@
 <script setup>
-import { ref, reactive, provide } from 'vue';
-import tasks from '@/tasks.json'
+import { ref, reactive, provide, onMounted, computed } from 'vue';
+// import tasks from '@/tasks.json'
 import AddTaskDialog from '@/components/AddTaskDialog.vue'
 import TaskCategoryCard from './components/TaskCategoryCard.vue';
+import axios from 'axios';
 
-const list = reactive(tasks);
+
+const list = reactive({
+  tasks: [],
+});
 
 const ongoingColor = ref("red-lighten-4");
 const doneColor = ref("green-darken-2");
@@ -12,57 +16,87 @@ const doneColor = ref("green-darken-2");
 /**
  * Object pada JS pass by reference
  */
-const ongoingTask = reactive([]);
-const doneTask = reactive([]);
-
-list.tasks.forEach((task) => {
-  if (task.status === 'ongoing') {
-    ongoingTask.push(task);
-  } else {
-    doneTask.push(task);
+onMounted(async () => {
+  try {
+    const response = await axios.get('/api/tasks');
+    list.tasks = response.data;
+  } catch (error) {
+    console.log(error)
   }
 })
 
-const markTask = (item, index) => {
-  if (item.status === 'ongoing') {
-    item.status = 'done';
-    const task = ongoingTask.splice(index, 1);
-    doneTask.push(task[0]);
-  } else if (item.status === 'done') {
-    item.status = 'ongoing';
-    const task = doneTask.splice(index, 1);
-    ongoingTask.push(task[0]);
+const ongoingTask = computed(() => {
+  return list.tasks.filter((task) => task.status === 'ongoing')
+});
+const doneTask = computed(() => {
+  return list.tasks.filter((task) => task.status === 'done')
+});
+
+const markTask = async (item, index) => {
+  try {
+    let newStatus = "";
+    if (item.status === 'ongoing') {
+      newStatus = 'done';
+    } else {
+      newStatus = 'ongoing';
+    }
+
+    const result = await axios.patch(`/api/tasks/${item.id}`, {
+      status: newStatus
+    })
+
+    const responseTemp = await axios.get('/api/tasks');
+    list.tasks = responseTemp.data;
+  } catch (error) {
+    console.log(error)
   }
 }
 
-const updateTask = (item, taskTitle) => {
-  if (item.status === 'ongoing') {
-    item.name = taskTitle;
-  } else if (item.status === 'done') {
-    item.name = taskTitle;
+const updateTask = async (item, taskTitle) => {
+  try {
+    const result = await axios.patch(`/api/tasks/${item.id}`, {
+      name: taskTitle,
+    })
+
+    const responseTemp = await axios.get('/api/tasks');
+    list.tasks = responseTemp.data;
+  } catch (error) {
+    console.log(error);
   }
 }
 
-const deleteTask = (item, index) => {
-  if (item.status === 'ongoing') {
-    ongoingTask.splice(index, 1);
-  } else if (item.status === 'done') {
-    doneTask.splice(index, 1);
+const deleteTask = async (item, index) => {
+  try {
+    const result = await axios.delete(`/api/tasks/${item.id}`)
+
+    const responseTemp = await axios.get('/api/tasks');
+    list.tasks = responseTemp.data;
+  } catch (error) {
+    console.log(error)
   }
 }
 
-const addTask = (taskTitle) => {
+const addTask = async (taskTitle) => {
   const task = {
     id: Math.random().toString(16).slice(2),
     name: taskTitle,
     status: 'ongoing'
   }
 
-  ongoingTask.push(task);
+  try {
+    const result = await axios.post('/api/tasks', task);
+
+    const responseTemp = await axios.get('/api/tasks');
+    list.tasks = responseTemp.data;
+
+  } catch (error) {
+    console.log(error);
+  }
 
 }
 
 provide('task', { updateTask });
+
 
 </script>
 
@@ -83,10 +117,10 @@ provide('task', { updateTask });
     </v-row>
     <v-row justify="center">
       <v-col cols="8">
-        <TaskCategoryCard :card-color="ongoingColor" :ongoing-task="ongoingTask" @mark-task="markTask"
+        <TaskCategoryCard :card-color="ongoingColor" :ongoing-task="ongoingTask" category="Ongoing" @mark-task="markTask"
           @delete-task="deleteTask" @update-task="updateTask" />
-        <TaskCategoryCard :card-color="doneColor" :ongoing-task="doneTask" @mark-task="markTask" :delete-task="deleteTask"
-          @update-task="updateTask" />
+        <TaskCategoryCard :card-color="doneColor" :ongoing-task="doneTask" category="Done" @mark-task="markTask"
+          :delete-task="deleteTask" @update-task="updateTask" />
       </v-col>
     </v-row>
   </v-container>

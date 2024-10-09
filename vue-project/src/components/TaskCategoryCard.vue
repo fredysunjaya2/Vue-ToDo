@@ -12,6 +12,9 @@ const props = defineProps({
     },
     ongoingTask: {
         type: Array,
+    },
+    category: {
+        type: String,
     }
 });
 
@@ -34,7 +37,7 @@ const emitToParentUpdateTask = (item, taskTitle) => {
     <v-card class="mx-auto mt-8" :color="cardColor">
         <v-card-item class="pt-3 pb-6">
             <v-card-title class="py-0 pt-3">
-                <p>Ongoing</p>
+                <p>{{ category }}</p>
             </v-card-title>
             <v-list :bg-color="cardColor" class="border-t-lg">
                 <v-list-item v-for="( item, index ) in  ongoingTask " :key="item.id" :value="item.id" class="border-b-md"
