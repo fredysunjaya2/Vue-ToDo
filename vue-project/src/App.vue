@@ -18,14 +18,17 @@ const sortBySelectValue = ref("");
 /**
  * Object pada JS pass by reference
  */
-onMounted(async () => {
+
+const getTasks = async () => {
   try {
     const response = await axios.get('/api/tasks');
     list.tasks = response.data;
   } catch (error) {
     console.log(error)
   }
-})
+}
+
+onMounted(getTasks);
 
 const ongoingTask = computed(() => {
   return list.tasks.filter((task) => task.status === 'ongoing')
@@ -33,26 +36,6 @@ const ongoingTask = computed(() => {
 const doneTask = computed(() => {
   return list.tasks.filter((task) => task.status === 'done')
 });
-
-const markTask = async (item) => {
-  try {
-    let newStatus = "";
-    if (item.status === 'ongoing') {
-      newStatus = 'done';
-    } else {
-      newStatus = 'ongoing';
-    }
-
-    const result = await axios.patch(`/api/tasks/${item.id}`, {
-      status: newStatus
-    })
-
-    const responseTemp = await axios.get('/api/tasks');
-    list.tasks = responseTemp.data;
-  } catch (error) {
-    console.log(error)
-  }
-}
 
 const updateTask = async (item, taskTitle) => {
   try {
@@ -100,30 +83,7 @@ const deleteTask = async (event, item) => {
   });
 }
 
-const addTask = async (taskTitle) => {
-  const task = {
-    id: Math.random().toString(16).slice(2),
-    name: taskTitle,
-    status: 'ongoing',
-    createdAt: moment().toISOString
-  }
-
-  try {
-    const result = await axios.post('/api/tasks', task);
-
-    const responseTemp = await axios.get('/api/tasks');
-    list.tasks = responseTemp.data;
-
-    taskToast.fire({
-      titleText: 'Task added successfully!!!',
-    });
-  } catch (error) {
-    console.log(error);
-  }
-
-}
-
-provide('task', { updateTask });
+provide('task', { updateTask, getTasks });
 
 const sortBy = async () => {
   try {
@@ -217,17 +177,17 @@ const taskConfirmation = Swal.mixin({
           </v-select>
           <v-btn prepend-icon="$mdiPlus" variant="outlined">
             Add Task
-            <AddTaskDialog @add-task="addTask" />
+            <AddTaskDialog />
           </v-btn>
         </v-row>
       </v-col>
     </v-row>
     <v-row justify="center">
       <v-col cols="8">
-        <TaskCategoryCard :card-color="ongoingColor" :ongoing-task="ongoingTask" category="Ongoing" @mark-task="markTask"
+        <TaskCategoryCard :card-color="ongoingColor" :ongoing-task="ongoingTask" category="Ongoing"
           @delete-task="deleteTask" @update-task="updateTask" />
-        <TaskCategoryCard :card-color="doneColor" :ongoing-task="doneTask" category="Done" @mark-task="markTask"
-          @delete-task="deleteTask" @update-task="updateTask" />
+        <TaskCategoryCard :card-color="doneColor" :ongoing-task="doneTask" category="Done" @delete-task="deleteTask"
+          @update-task="updateTask" />
       </v-col>
     </v-row>
   </v-container>

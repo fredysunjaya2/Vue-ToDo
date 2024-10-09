@@ -1,5 +1,7 @@
 <script setup>
 import { ref, reactive, inject } from 'vue';
+import moment from 'moment';
+import axios from 'axios';
 
 let formValid = false;
 const isDialogShown = ref(false);
@@ -47,6 +49,27 @@ const addTaskRequest = () => {
     }
 }
 
+const addTask = async (taskTitle) => {
+    const task = {
+        id: Math.random().toString(16).slice(2),
+        name: taskTitle,
+        status: 'ongoing',
+        createdAt: moment().toISOString
+    }
+
+    try {
+        const result = await axios.post('/api/tasks', task);
+
+        getTasks()
+
+        taskToast.fire({
+            titleText: 'Task added successfully!!!',
+        });
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 /**
  * dengan cara emit tetapi dalam complex nested component akan sulit karena emit hanya naik 1 step ke parentnya sehingga 
  * akan terlalu banyak passing estafet dari deep child ke rootnya
@@ -65,7 +88,7 @@ const addTaskRequest = () => {
 /**
  * dengan cara provide dan inject sehingga mencegah passing estafet
  */
-const { updateTask } = inject('task')
+const { updateTask, getTasks } = inject('task')
 
 const updateTaskRequest = () => {
     if (formValid) {
@@ -92,7 +115,7 @@ const updateTaskRequest = () => {
                         <v-row>
                             <v-col>
                                 <v-form validate-on="input lazy"
-                                    @submit.prevent="taskOldTitle === '' ? addTaskRequest() : updateTaskRequest()"
+                                    @submit.prevent="taskOldTitle === '' ? addTask() : updateTaskRequest()"
                                     v-model="formValid">
                                     <v-text-field v-if="taskOldTitle === ''" clearable placeholder="Type Task" type="text"
                                         v-model="taskTitle" :rules="rules.taskRules" autofocus>

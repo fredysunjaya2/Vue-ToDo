@@ -1,7 +1,8 @@
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, inject } from 'vue';
 import AddTaskDialog from '@/components/AddTaskDialog.vue';
 import moment from 'moment';
+import axios from 'axios';
 
 /**
  * Penggunaan Props
@@ -31,6 +32,27 @@ const emitToParentUpdateTask = (item, taskTitle) => {
     emit('updateTask', item, taskTitle);
 }
 
+const markTask = async (item) => {
+    try {
+        let newStatus = "";
+        if (item.status === 'ongoing') {
+            newStatus = 'done';
+        } else {
+            newStatus = 'ongoing';
+        }
+
+        const result = await axios.patch(`/api/tasks/${item.id}`, {
+            status: newStatus
+        })
+
+        getTasks();
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+const { getTasks } = inject('task');
+
 </script>
 
 <template>
@@ -40,8 +62,10 @@ const emitToParentUpdateTask = (item, taskTitle) => {
                 <p>{{ category }}</p>
             </v-card-title>
             <v-list :bg-color="cardColor" class="border-t-lg">
+                <!-- <v-list-item v-for="( item, index ) in  ongoingTask " :key="item.id" :value="item.id" class="border-b-md"
+                    @click="$emit('markTask', item)"> -->
                 <v-list-item v-for="( item, index ) in  ongoingTask " :key="item.id" :value="item.id" class="border-b-md"
-                    @click="$emit('markTask', item)">
+                    @click="markTask(item)">
                     <div class="d-flex justify-space-between align-center">
                         <p>{{ item.name }}</p>
                         <p>{{ moment(item.createdAt).format("ddd, Do MMM YYYY") }}</p>
