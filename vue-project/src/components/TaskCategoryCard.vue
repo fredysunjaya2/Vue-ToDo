@@ -19,19 +19,6 @@ const props = defineProps({
     }
 });
 
-/**
- * Penggunaan declaration emits
- */
-const emit = defineEmits([
-    'markTask',
-    'deleteTask',
-    'updateTask',
-])
-
-const emitToParentUpdateTask = (item, taskTitle) => {
-    emit('updateTask', item, taskTitle);
-}
-
 const markTask = async (item) => {
     try {
         let newStatus = "";
@@ -51,7 +38,35 @@ const markTask = async (item) => {
     }
 }
 
-const { getTasks } = inject('task');
+const deleteTask = async (event, item) => {
+    event.stopPropagation();
+
+    taskConfirmation.fire({
+        titleText: "Are you sure to delete this task?",
+    }).then(async (result) => {
+        try {
+            if (result.isConfirmed) {
+                const result = await axios.delete(`/api/tasks/${item.id}`)
+
+                getTasks();
+
+                taskToast.fire({
+                    titleText: 'Task Deleted Successfully!!!',
+                });
+            } else if (result.isDenied) {
+                taskToast.fire({
+                    titleText: 'Task Deletion is Cancelled',
+                    icon: 'error',
+                    background: '#D50000',
+                })
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    });
+}
+
+const { getTasks, taskConfirmation, taskToast } = inject('task');
 
 </script>
 
@@ -62,9 +77,7 @@ const { getTasks } = inject('task');
                 <p>{{ category }}</p>
             </v-card-title>
             <v-list :bg-color="cardColor" class="border-t-lg">
-                <!-- <v-list-item v-for="( item, index ) in  ongoingTask " :key="item.id" :value="item.id" class="border-b-md"
-                    @click="$emit('markTask', item)"> -->
-                <v-list-item v-for="( item, index ) in  ongoingTask " :key="item.id" :value="item.id" class="border-b-md"
+                <v-list-item v-for="( item ) in  ongoingTask " :key="item.id" :value="item.id" class="border-b-md"
                     @click="markTask(item)">
                     <div class="d-flex justify-space-between align-center">
                         <p>{{ item.name }}</p>
@@ -72,10 +85,9 @@ const { getTasks } = inject('task');
                         <div>
                             <v-btn variant="tonal" icon="$mdiPencil">
                                 <v-icon icon="$mdiPencil"></v-icon>
-                                <AddTaskDialog :task-old-title="item.name" :task-item="item"
-                                    @emit-to-parent-update-task="emitToParentUpdateTask" />
+                                <AddTaskDialog :task-old-title="item.name" :task-item="item" />
                             </v-btn>
-                            <v-btn variant="tonal" icon="$mdiClose" @click="$emit('deleteTask', $event, item);"></v-btn>
+                            <v-btn variant="tonal" icon="$mdiClose" @click="deleteTask($event, item);"></v-btn>
                         </div>
                     </div>
                 </v-list-item>

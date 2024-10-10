@@ -37,54 +37,6 @@ const doneTask = computed(() => {
   return list.tasks.filter((task) => task.status === 'done')
 });
 
-const updateTask = async (item, taskTitle) => {
-  try {
-    const result = await axios.patch(`/api/tasks/${item.id}`, {
-      name: taskTitle,
-    })
-
-    const responseTemp = await axios.get('/api/tasks');
-    list.tasks = responseTemp.data;
-
-    taskToast.fire({
-      titleText: 'Task Updated Successfully!!!',
-    });
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-const deleteTask = async (event, item) => {
-  event.stopPropagation();
-
-  taskConfirmation.fire({
-    titleText: "Are you sure to delete this task?",
-  }).then(async (result) => {
-    try {
-      if (result.isConfirmed) {
-        const result = await axios.delete(`/api/tasks/${item.id}`)
-
-        const responseTemp = await axios.get('/api/tasks');
-        list.tasks = responseTemp.data;
-
-        taskToast.fire({
-          titleText: 'Task Deleted Successfully!!!',
-        });
-      } else if (result.isDenied) {
-        taskToast.fire({
-          titleText: 'Task Deletion is Cancelled',
-          icon: 'error',
-          background: '#D50000',
-        })
-      }
-    } catch (error) {
-      console.log(error)
-    }
-  });
-}
-
-provide('task', { updateTask, getTasks });
-
 const sortBy = async () => {
   try {
     if (sortBySelectValue.value === 'Date') {
@@ -160,6 +112,8 @@ const taskConfirmation = Swal.mixin({
   }
 })
 
+provide('task', { getTasks, taskToast, taskConfirmation });
+
 </script>
 
 <template>
@@ -184,13 +138,13 @@ const taskConfirmation = Swal.mixin({
     </v-row>
     <v-row justify="center">
       <v-col cols="8">
-        <TaskCategoryCard :card-color="ongoingColor" :ongoing-task="ongoingTask" category="Ongoing"
-          @delete-task="deleteTask" @update-task="updateTask" />
-        <TaskCategoryCard :card-color="doneColor" :ongoing-task="doneTask" category="Done" @delete-task="deleteTask"
-          @update-task="updateTask" />
+        <TaskCategoryCard :card-color="ongoingColor" :ongoing-task="ongoingTask" category="Ongoing" />
+        <TaskCategoryCard :card-color="doneColor" :ongoing-task="doneTask" category="Done" />
       </v-col>
     </v-row>
   </v-container>
 </template>
+
+<style></style>
 
 <style></style>

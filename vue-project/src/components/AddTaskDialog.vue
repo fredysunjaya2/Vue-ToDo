@@ -37,33 +37,46 @@ const taskNewTitle = ref(props.taskOldTitle);
 
 const emit = defineEmits([
     'addTask',
-    'emitToParentUpdateTask',
 ]);
 
-const addTaskRequest = () => {
+const addTask = async () => {
     if (formValid) {
-        emit('addTask', taskTitle.value);
+        const task = {
+            id: Math.random().toString(16).slice(2),
+            name: taskTitle.value,
+            status: 'ongoing',
+            createdAt: moment().toISOString
+        }
 
-        isDialogShown.value = false;
-        taskTitle.value = "";
+        try {
+            const result = await axios.post('/api/tasks', task);
+            isDialogShown.value = false;
+            taskTitle.value = "";
+
+            getTasks();
+
+            taskToast.fire({
+                titleText: 'Task added successfully!!!',
+            });
+        } catch (error) {
+            console.log(error);
+        }
+
     }
 }
 
-const addTask = async (taskTitle) => {
-    const task = {
-        id: Math.random().toString(16).slice(2),
-        name: taskTitle,
-        status: 'ongoing',
-        createdAt: moment().toISOString
-    }
-
+const updateTask = async () => {
     try {
-        const result = await axios.post('/api/tasks', task);
+        const result = await axios.patch(`/api/tasks/${props.taskItem.id}`, {
+            name: taskNewTitle.value,
+        })
+        isDialogShown.value = false;
+        taskNewTitle.value = "";
 
-        getTasks()
+        getTasks();
 
         taskToast.fire({
-            titleText: 'Task added successfully!!!',
+            titleText: 'Task Updated Successfully!!!',
         });
     } catch (error) {
         console.log(error);
@@ -88,16 +101,7 @@ const addTask = async (taskTitle) => {
 /**
  * dengan cara provide dan inject sehingga mencegah passing estafet
  */
-const { updateTask, getTasks } = inject('task')
-
-const updateTaskRequest = () => {
-    if (formValid) {
-        updateTask(props.taskItem, taskNewTitle.value)
-
-        isDialogShown.value = false;
-        taskTitle.value = "";
-    }
-}
+const { getTasks, taskToast } = inject('task')
 
 </script>
 
@@ -115,8 +119,7 @@ const updateTaskRequest = () => {
                         <v-row>
                             <v-col>
                                 <v-form validate-on="input lazy"
-                                    @submit.prevent="taskOldTitle === '' ? addTask() : updateTaskRequest()"
-                                    v-model="formValid">
+                                    @submit.prevent="taskOldTitle === '' ? addTask() : updateTask()" v-model="formValid">
                                     <v-text-field v-if="taskOldTitle === ''" clearable placeholder="Type Task" type="text"
                                         v-model="taskTitle" :rules="rules.taskRules" autofocus>
                                     </v-text-field>
