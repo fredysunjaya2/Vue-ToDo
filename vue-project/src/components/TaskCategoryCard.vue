@@ -38,9 +38,7 @@ const markTask = async (item) => {
     }
 }
 
-const deleteTask = async (event, item) => {
-    event.stopPropagation();
-
+const deleteTask = async (item) => {
     taskConfirmation.fire({
         titleText: "Are you sure to delete this task?",
     }).then(async (result) => {
@@ -87,7 +85,7 @@ const { getTasks, taskConfirmation, taskToast } = inject('task');
                                 <v-icon icon="$mdiPencil"></v-icon>
                                 <AddTaskDialog :task-old-title="item.name" :task-item="item" />
                             </v-btn>
-                            <v-btn variant="tonal" icon="$mdiClose" @click="deleteTask($event, item);"></v-btn>
+                            <v-btn variant="tonal" icon="$mdiClose" @click.stop="deleteTask(item);"></v-btn>
                         </div>
                     </div>
                 </v-list-item>
@@ -95,3 +93,5 @@ const { getTasks, taskConfirmation, taskToast } = inject('task');
         </v-card-item>
     </v-card>
 </template>
+
+<style></style>

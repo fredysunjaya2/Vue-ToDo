@@ -35,10 +35,6 @@ const taskTitle = ref("");
 
 const taskNewTitle = ref(props.taskOldTitle);
 
-const emit = defineEmits([
-    'addTask',
-]);
-
 const addTask = async () => {
     if (formValid) {
         const task = {
@@ -71,7 +67,6 @@ const updateTask = async () => {
             name: taskNewTitle.value,
         })
         isDialogShown.value = false;
-        taskNewTitle.value = "";
 
         getTasks();
 
@@ -88,9 +83,13 @@ const updateTask = async () => {
  * akan terlalu banyak passing estafet dari deep child ke rootnya
  */
 
+// const customEmitsName = defineEmits([
+//     'emitToParentUpdateTask',
+// ]);
+
 // const updateTaskRequest = () => {
 //     if (formValid) {
-//         emit('emitToParentUpdateTask', props.taskItem, taskNewTitle.value);
+//         customEmitsName('emitToParentUpdateTask', props.taskItem, taskNewTitle.value);
 
 //         isDialogShown.value = false;
 //         taskTitle.value = "";
@@ -132,7 +131,7 @@ const { getTasks, taskToast } = inject('task')
                                     <v-btn v-else type="submit">
                                         Confirm
                                     </v-btn>
-                                    <v-btn @click="isDialogShown = false;">
+                                    <v-btn @click="isDialogShown = false; taskNewTitle = props.taskOldTitle;">
                                         Cancel
                                     </v-btn>
                                 </v-form>
@@ -144,3 +143,5 @@ const { getTasks, taskToast } = inject('task')
         </template>
     </v-dialog>
 </template>
+
+<style></style>

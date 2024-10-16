@@ -6,6 +6,7 @@ import TaskCategoryCard from './components/TaskCategoryCard.vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import moment from 'moment';
+import { mdiClose } from '@mdi/js'
 
 const list = reactive({
   tasks: [],
@@ -129,7 +130,7 @@ provide('task', { getTasks, taskToast, taskConfirmation });
           <v-select clearable label="Sort By:" variant="outlined" :items="['Date', 'A-Z', 'Z-A']" max-width="15%"
             v-model="sortBySelectValue" @update:model-value="sortBy">
           </v-select>
-          <v-btn prepend-icon="$mdiPlus" variant="outlined">
+          <v-btn :prepend-icon="mdiClose" variant="outlined">
             Add Task
             <AddTaskDialog />
           </v-btn>
@@ -144,7 +145,5 @@ provide('task', { getTasks, taskToast, taskConfirmation });
     </v-row>
   </v-container>
 </template>
-
-<style></style>
 
 <style></style>
